@@ -37,6 +37,7 @@
   // --- DOM ELEMENTS ---
   const DOM = {
     html: document.documentElement,
+    brandHomeBtn: document.getElementById('brandHomeBtn'),
     themeToggleBtn: document.getElementById('themeToggleBtn'),
     themeIconContainer: document.getElementById('themeIconContainer'),
     // Upload & Dropzone
@@ -324,7 +325,7 @@
     DOM.viewerSection.classList.add('animate-fade-in-up');
   }
 
-  function resetToWelcome() {
+  function resetToWelcome(toastMsg = 'Kembali ke dashboard & data berhasil direset.') {
     state.rawHeaders = [];
     state.rawRows = [];
     state.filteredRows = [];
@@ -342,7 +343,9 @@
     DOM.viewerSection.classList.add('hidden');
     DOM.welcomeSection.classList.remove('hidden');
     DOM.welcomeSection.classList.add('animate-fade-in-up');
-    showToast('Tampilan berhasil direset', 'success');
+    if (toastMsg) {
+      showToast(toastMsg, 'success');
+    }
   }
 
   // --- LOADING MODAL ---
@@ -970,6 +973,19 @@
 
   // --- EVENT LISTENERS INITIALIZATION ---
   function initEventListeners() {
+    // Brand / Title Click -> Return to Dashboard & Reset Data
+    if (DOM.brandHomeBtn) {
+      DOM.brandHomeBtn.addEventListener('click', () => {
+        // Jika sedang menampilkan tabel atau ada data yang dimuat, reset ke welcome dashboard
+        if (!DOM.viewerSection.classList.contains('hidden') || state.rawRows.length > 0) {
+          resetToWelcome('Kembali ke dashboard & data CSV berhasil direset.');
+        } else {
+          // Jika sudah di dashboard, beri efek feedback ramah
+          showToast('Anda sudah berada di halaman dashboard.', 'info');
+        }
+      });
+    }
+
     // Dropzone & File Input
     DOM.fileInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
