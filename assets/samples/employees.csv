@@ -1,0 +1,17 @@
+Employee_ID,Full_Name,Department,Job_Title,Hire_Date,Salary,Performance_Score,Status
+EMP-001,Budi Setiawan,Engineering,Principal Software Engineer,2021-03-15,35000000,4.9,Active
+EMP-002,Siti Aminah,Product Management,Lead Product Manager,2020-07-01,32000000,4.8,Active
+EMP-003,Rizky Pratama,Design,Senior UI/UX Designer,2022-01-10,22000000,4.7,Active
+EMP-004,Dewi Sartika,Engineering,Frontend Tech Lead,2021-08-20,28000000,4.9,Active
+EMP-005,Ahmad Fauzi,Data Science,Data Engineer Specialist,2022-05-12,24000000,4.6,Active
+EMP-006,Intan Permatasari,Marketing,Growth Marketing Lead,2023-02-01,19500000,4.5,Active
+EMP-007,Ferry Irawan,Quality Assurance,Senior QA Automation,2022-09-15,18000000,4.4,Active
+EMP-008,Nadia Safitri,Human Resources,People Operations Manager,2020-11-05,21000000,4.8,Active
+EMP-009,Kevin Wijaya,DevOps,Cloud Infrastructure Engineer,2023-04-18,25000000,4.7,Active
+EMP-010,Tania Caroline,Finance,Financial Analyst,2021-12-01,16500000,4.5,Active
+EMP-011,Hadi Saputra,Engineering,Backend Developer,2024-01-15,17000000,4.3,Active
+EMP-012,Putri Maharani,Customer Success,Customer Support Lead,2022-08-01,13500000,4.6,Active
+EMP-013,Ardiansyah,Security,Cybersecurity Analyst,2023-06-10,23000000,4.7,Active
+EMP-014,Lestari Ningrum,Operations,Operations Specialist,2023-10-01,12000000,4.2,Active
+EMP-015,Ilham Ramadhan,Engineering,Mobile Flutter Developer,2024-03-01,16000000,4.4,Probation
+

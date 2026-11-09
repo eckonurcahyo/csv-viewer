@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSV Viewer Pro - Offline CSV to Excel Converter</title>
+  <!-- 100% Offline Tailwind CSS -->
+  <link rel="stylesheet" href="assets/css/tailwind.css" />
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased transition-colors duration-200 relative overflow-x-hidden">
+
+  <!-- ========================================================================
+       INTERACTIVE BACKGROUND CANVAS & AMBIENT GLOW ORBS (100% OFFLINE)
+       ======================================================================== -->
+  <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-70 dark:opacity-40"></canvas>
+  <div class="fixed top-24 left-10 w-96 h-96 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-orb-1"></div>
+  <div class="fixed bottom-24 right-10 w-96 h-96 bg-teal-500/10 dark:bg-teal-500/15 rounded-full blur-3xl pointer-events-none animate-orb-2"></div>
+
+  <!-- ========================================================================
+       TOP NAVBAR
+       ======================================================================== -->
+  <header class="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg text-slate-900 dark:text-white leading-tight">CSV Viewer <span class="text-emerald-600 dark:text-emerald-400">Pro</span></h1>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+              <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+              100% Offline
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Lihat, Filter, dan Ekspor CSV ke Microsoft Excel (.xlsx)</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Light / Dark Theme Switcher Button with Icon Animation -->
+        <button id="themeToggleBtn" type="button" class="relative p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500" title="Ganti Mode Tampilan (Light / Dark)">
+          <div id="themeIconContainer" class="flex items-center justify-center transition-transform duration-300">
+            <!-- Icon will be injected by JS -->
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN CONTENT CONTAINER
+       ======================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ====================================================================
+         VIEW 1: WELCOME & FILE UPLOAD DROPZONE
+         ==================================================================== -->
+    <section id="welcomeSection" class="transition-opacity duration-300">
+      <!-- Hero Banner -->
+      <div class="text-center max-w-2xl mx-auto mb-8 mt-4">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Buka, Eksplorasi & Ekspor File CSV ke Excel
+        </h2>
+        <p class="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+          Semua proses pengolahan data dan pembuatan file Excel berjalan <span class="font-semibold text-emerald-600 dark:text-emerald-400">100% di browser Anda secara offline</span>. Tanpa koneksi internet, tanpa upload data ke server luar.
+        </p>
+      </div>
+
+      <!-- Drag & Drop Upload Zone with Animated Floating Icon -->
+      <div class="max-w-2xl mx-auto relative z-10">
+        <div id="dropzone" class="relative group cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-3xl p-8 sm:p-14 text-center bg-white/85 dark:bg-slate-900/80 backdrop-blur-md shadow-sm hover:shadow-2xl transition-all duration-300">
+          <input type="file" id="fileInput" accept=".csv, .tsv, .txt" class="hidden" />
+
+          <!-- Animated Floating Upload Icon with Ambient Pulse Ring -->
+          <div class="mx-auto relative w-20 h-20 mb-5 flex items-center justify-center">
+            <!-- Pulsing Halo Ring -->
+            <div class="absolute inset-0 rounded-3xl bg-emerald-500/15 dark:bg-emerald-400/20 animate-pulse-ring pointer-events-none"></div>
+            <!-- Floating Container with 3D feel -->
+            <div class="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner animate-float-slow group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-8 h-8 group-hover:animate-icon-upload transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+              </svg>
+            </div>
+          </div>
+
+          <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            Tarik & Jatuhkan file CSV ke sini
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            atau klik tombol di bawah untuk memilih file dari komputer Anda
+          </p>
+
+          <div class="mt-6 flex flex-wrap items-center justify-center gap-3.5">
+            <button id="btnUploadPrompt" type="button" class="btn-shine-effect inline-flex items-center gap-2.5 px-6 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 shadow-md shadow-emerald-600/30 transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer group/btn">
+              <svg class="w-4 h-4 group-hover/btn:animate-icon-upload transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>
+              <span>Pilih File CSV</span>
+            </button>
+            <button id="btnOpenPasteModal" type="button" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 bg-white/90 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-xs transition-all hover:scale-[1.02] focus:outline-none cursor-pointer group/btn">
+              <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover/btn:rotate-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.25 11.25H18a2.25 2.25 0 0 0 2.25-2.25V6.108M8.25 7.5H6.375A2.25 2.25 0 0 0 4.125 9.75v8.25A2.25 2.25 0 0 0 6.375 20.25h9.75a2.25 2.25 0 0 0 2.25-2.25v-2.25"/></svg>
+              <span>Tempel Teks CSV</span>
+            </button>
+          </div>
+
+          <div class="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-400 dark:text-slate-500">
+            <span class="inline-flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+              Format: .csv, .tsv, .txt
+            </span>
+            <span>•</span>
+            <span class="inline-flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-teal-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+              Auto Deteksi Delimiter
+            </span>
+            <span>•</span>
+            <span class="inline-flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+              Ukuran Tanpa Batas
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         VIEW 2: ACTIVE CSV VIEWER & INTERACTIVE TABLE
+         ==================================================================== -->
+    <section id="viewerSection" class="hidden space-y-4">
+
+      <!-- KPI Stats & File Info Header -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- File Name -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+            Nama File
+          </div>
+          <div id="statFileName" class="mt-1 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate" title="data.csv">-</div>
+        </div>
+
+        <!-- File Size -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m6 4.125 2.25 2.25m0 0 2.25-2.25M12 13.875V7.5M3.75 7.5h16.5"/></svg>
+            Ukuran
+          </div>
+          <div id="statFileSize" class="mt-1 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 font-mono">-</div>
+        </div>
+
+        <!-- Total Rows -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-teal-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            Total Baris
+          </div>
+          <div id="statTotalRows" class="mt-1 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 font-mono">-</div>
+        </div>
+
+        <!-- Total Columns -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.5-15h15a2.25 2.25 0 0 1 2.25 2.25v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75A2.25 2.25 0 0 1 4.5 4.5Z"/></svg>
+            Total Kolom
+          </div>
+          <div id="statTotalCols" class="mt-1 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 font-mono">-</div>
+        </div>
+
+        <!-- Filtered Rows -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/></svg>
+            Tersaring
+          </div>
+          <div id="statFilteredRows" class="mt-1 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">-</div>
+        </div>
+
+        <!-- Delimiter & Reset -->
+        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Delimiter</div>
+            <div id="statDelimiter" class="mt-1 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 font-mono">-</div>
+          </div>
+          <button id="btnResetData" type="button" class="p-2 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors" title="Muat CSV Lain / Reset">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Toolbar (Search, Filter, Column Visibility, Rows Per Page & Export Button) -->
+      <div class="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        
+        <!-- Left: Search Box -->
+        <div class="relative flex-1 max-w-md">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+          </div>
+          <input type="text" id="globalSearchInput" placeholder="Cari data pada semua kolom... (Ctrl+F)" class="w-full pl-10 pr-9 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all" />
+          <button id="clearSearchBtn" type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Bersihkan Pencarian">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Right: Actions & Download to Excel -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          
+          <!-- Column Visibility Selector Dropdown -->
+          <div class="relative">
+            <button id="btnColVisibility" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors">
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15m-10.5-15h15a2.25 2.25 0 0 1 2.25 2.25v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75A2.25 2.25 0 0 1 4.5 4.5Z"/></svg>
+              <span>Kolom</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+            </button>
+
+            <!-- Column Visibility Dropdown Menu -->
+            <div id="colVisibilityDropdown" class="hidden absolute right-0 mt-2 w-64 p-3 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-40 animate-fade-in-up">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-slate-700">
+                <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">Pilih Kolom Tampil</span>
+                <div class="flex items-center gap-1">
+                  <button id="btnSelectAllCols" type="button" class="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline">Semua</button>
+                  <span class="text-slate-400 text-[10px]">•</span>
+                  <button id="btnDeselectAllCols" type="button" class="text-[10px] text-slate-500 hover:underline">Reset</button>
+                </div>
+              </div>
+              <div id="colVisibilityList" class="max-h-60 overflow-y-auto space-y-1">
+                <!-- Dynamically rendered checkbox items -->
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Rows per page -->
+          <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <span class="hidden sm:inline">Tampilkan:</span>
+            <select id="pageSizeSelect" class="px-2.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+              <option value="10">10 Baris</option>
+              <option value="15" selected>15 Baris</option>
+              <option value="25">25 Baris</option>
+              <option value="50">50 Baris</option>
+              <option value="100">100 Baris</option>
+              <option value="-1">Semua Baris</option>
+            </select>
+          </div>
+
+          <!-- ================================================================
+               EXCEL EXPORT SPLIT BUTTON (WITH DOWNLOAD ANIMATIONS)
+               ================================================================ -->
+          <div class="relative flex items-center shadow-sm rounded-xl">
+            <!-- Main Export Button (Exports Filtered/Current Data) -->
+            <button id="btnExportExcel" type="button" class="group relative inline-flex items-center gap-2 px-4 py-2 rounded-l-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 select-none">
+              <!-- Animated Download Icon -->
+              <span class="export-icon-wrapper inline-flex items-center justify-center">
+                <svg class="w-4 h-4 group-hover:animate-icon-download transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                </svg>
+              </span>
+              <span>Download Excel</span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-normal bg-emerald-800/60 text-emerald-100 hidden sm:inline">.xlsx</span>
+            </button>
+
+            <!-- Dropdown Toggle Button for "Export All" option -->
+            <button id="btnExportExcelDropdownToggle" type="button" class="px-2 py-2.5 rounded-r-xl border-l border-emerald-500/50 bg-teal-600 hover:bg-teal-500 text-white transition-colors focus:outline-none" title="Pilihan Ekspor Excel Lainnya">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+            </button>
+
+            <!-- Export Dropdown Menu -->
+            <div id="exportDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-64 p-1.5 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-40 animate-fade-in-up">
+              <div class="px-3 py-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Format Microsoft Excel</div>
+              <button id="btnExportExcelFiltered" type="button" onclick="document.getElementById('btnExportExcel').click()" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700/60 rounded-lg transition-colors text-left">
+                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <div>
+                  <div>Download Excel (Tersaring)</div>
+                  <div class="text-[10px] text-slate-400">Sesuai filter & pencarian</div>
+                </div>
+              </button>
+              <button id="btnExportExcelAll" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700/60 rounded-lg transition-colors text-left">
+                <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.75 7.5h16.5"/></svg>
+                <div>
+                  <div>Download Excel (Semua Data)</div>
+                  <div class="text-[10px] text-slate-400">Semua baris dari file asli</div>
+                </div>
+              </button>
+
+              <div class="my-1 border-t border-slate-100 dark:border-slate-700/60"></div>
+              <div class="px-3 py-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Format Lainnya</div>
+
+              <button id="btnExportCsvFiltered" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700/60 rounded-lg transition-colors text-left">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                <div>
+                  <div>Download CSV (.csv)</div>
+                  <div class="text-[10px] text-slate-400">Ekspor teks CSV terformat</div>
+                </div>
+              </button>
+
+              <button id="btnExportJsonFiltered" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700/60 rounded-lg transition-colors text-left">
+                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/></svg>
+                <div>
+                  <div>Download JSON (.json)</div>
+                  <div class="text-[10px] text-slate-400">Array objek data JSON</div>
+                </div>
+              </button>
+
+              <button id="btnCopyTsvClipboard" type="button" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700/60 rounded-lg transition-colors text-left">
+                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/></svg>
+                <div>
+                  <div>Salin ke Clipboard (Format Excel)</div>
+                  <div class="text-[10px] text-slate-400">Langsung paste di Excel (Ctrl+V)</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Main Data Table Container -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto min-h-[350px] max-h-[68vh]">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr id="tableHeaderRow">
+                <!-- Dynamically generated header columns -->
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <!-- Dynamically generated row data -->
+            </tbody>
+          </table>
+
+          <!-- Empty Search / No Data Placeholder -->
+          <div id="noDataPlaceholder" class="hidden py-16 px-4 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 mx-auto flex items-center justify-center mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+            </div>
+            <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300">Tidak ada baris data yang cocok</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian Anda</p>
+          </div>
+        </div>
+
+        <!-- Pagination Controls Footer -->
+        <div class="p-3 sm:p-4 bg-slate-50/70 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          
+          <!-- Rows Counter Info -->
+          <div id="paginationInfo" class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left select-none">
+            Memuat data...
+          </div>
+
+          <!-- Pagination Navigation Buttons -->
+          <div class="flex items-center gap-1">
+            <button id="btnFirstPage" type="button" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Halaman Pertama">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5"/></svg>
+            </button>
+            <button id="btnPrevPage" type="button" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Halaman Sebelumnya">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+            </button>
+
+            <!-- Page Number Pills Container -->
+            <div id="pageNumberButtons" class="flex items-center gap-1 mx-1">
+              <!-- Dynamically populated page buttons -->
+            </div>
+
+            <button id="btnNextPage" type="button" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Halaman Selanjutnya">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+            </button>
+            <button id="btnLastPage" type="button" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Halaman Terakhir">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"/></svg>
+            </button>
+
+            <!-- Jump to Page -->
+            <div class="hidden md:flex items-center gap-1.5 ml-3 pl-3 border-l border-slate-200 dark:border-slate-800 text-xs">
+              <span class="text-slate-400">Ke:</span>
+              <input type="number" id="pageJumpInput" min="1" placeholder="Hal" class="w-14 px-2 py-1 rounded-lg text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+              <button id="btnJumpPage" type="button" class="px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-medium text-slate-700 dark:text-slate-200 transition-colors">Go</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       MODAL 1: ANIMATED LOADING OVERLAY (DURING CSV PARSING)
+       ======================================================================== -->
+  <div id="loadingModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in-up">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl text-center relative overflow-hidden">
+      <!-- Animated Pulsing Background Ring -->
+      <div class="mx-auto relative w-20 h-20 mb-5 flex items-center justify-center">
+        <!-- Dual Outer Rotating Rings -->
+        <div class="absolute inset-0 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin-smooth"></div>
+        <div class="absolute inset-2 rounded-full border-4 border-teal-500/20 border-b-teal-500 animate-spin-reverse"></div>
+        
+        <!-- Center Icon with Pulse -->
+        <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center animate-pulse">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25Z" />
+          </svg>
+        </div>
+      </div>
+
+      <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">Memproses Data CSV</h3>
+      <p id="loadingStatusText" class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-mono">
+        Menganalisis baris dan struktur data...
+      </p>
+
+      <!-- Skeleton Progress Strip -->
+      <div class="mt-5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+        <div class="skeleton-shimmer h-full w-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: ANIMATED EXPORT TO EXCEL FEEDBACK
+       ======================================================================== -->
+  <div id="exportModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in-up">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl text-center relative overflow-hidden">
+      
+      <!-- Animated Icon Container -->
+      <div class="mx-auto relative w-20 h-20 mb-5 flex items-center justify-center">
+        <!-- Loading State: Bouncing Download Icon with Spinning Halo -->
+        <div id="exportIconLoading" class="relative w-full h-full flex items-center justify-center">
+          <div class="absolute inset-0 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin-smooth"></div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <svg class="w-6 h-6 animate-icon-download" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Success State: Morphing Green Checkmark -->
+        <div id="exportIconSuccess" class="hidden relative w-full h-full flex items-center justify-center">
+          <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center animate-pop-in">
+            <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path class="animate-checkmark" stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Title & Live Percentage -->
+      <div class="flex items-center justify-center gap-2">
+        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">Mengekspor ke Excel</h3>
+        <span id="exportProgressPercent" class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">0%</span>
+      </div>
+      <p id="exportStatusText" class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+        Menyiapkan data tabel...
+      </p>
+
+      <!-- Live Dynamic Progress Bar -->
+      <div class="mt-5 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+        <div id="exportProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-300 w-0"></div>
+      </div>
+
+      <div class="mt-4 text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm10.5-8.5l-2.2 3.5 2.3 3.5h-1.6l-1.5-2.5-1.5 2.5H10.4l2.3-3.5-2.2-3.5h1.6l1.4 2.4 1.4-2.4h1.6z"/></svg>
+        <span>Format Microsoft Excel (.xlsx) Standar</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: CELL CONTENT INSPECTOR (FOR LONG TEXT / DETAILS)
+       ======================================================================== -->
+  <div id="cellDetailModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in-up">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+        <h3 id="cellDetailTitle" class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">Detail Sel Data</h3>
+        <button id="btnCloseCellModal" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="my-4 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-700/80 font-mono text-xs text-slate-800 dark:text-slate-200 whitespace-pre-wrap break-all select-all">
+        <p id="cellDetailContent">-</p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button id="btnCopyCellContent" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/></svg>
+          Salin Konten
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 4: PASTE RAW CSV MODAL
+       ======================================================================== -->
+  <div id="pasteCsvModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in-up">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Tempel Teks CSV</h3>
+        </div>
+        <button id="btnClosePasteModal" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="my-4 space-y-3 flex-1 flex flex-col">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama File (Opsional):</label>
+          <input type="text" id="pasteFileNameInput" placeholder="pasted_data.csv" class="w-full px-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono" />
+        </div>
+        <div class="flex-1 flex flex-col">
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Konten CSV:</label>
+          <textarea id="pasteCsvTextarea" rows="8" placeholder="Nama,Umur,Kota,Profesi&#10;Budi,28,Jakarta,Developer&#10;Siti,25,Surabaya,Designer" class="w-full flex-1 p-3 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono resize-none"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <button id="btnCancelPaste" type="button" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Batal</button>
+        <button id="btnSubmitPaste" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+          Proses CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       FLOATING TOAST NOTIFICATION
+       ======================================================================== -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none max-w-sm">
+    <div id="toastIcon" class="shrink-0">
+      <!-- Icon populated by JS -->
+    </div>
+    <div id="toastMessage" class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-100">
+      Notifikasi sistem
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-4 bg-white/50 dark:bg-slate-900/50 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>CSV Viewer Pro • 100% Offline Client-Side Architecture</div>
+      <div class="flex items-center gap-3 text-slate-400">
+        <span>Tailwind CSS</span>
+        <span>•</span>
+        <span>PapaParse</span>
+        <span>•</span>
+        <span>SheetJS (XLSX)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       OFFLINE LOCAL JAVASCRIPT ASSETS
+       ======================================================================== -->
+  <script src="assets/js/papaparse.min.js"></script>
+  <script src="assets/js/xlsx.full.min.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

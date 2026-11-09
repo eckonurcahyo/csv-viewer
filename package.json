@@ -1,0 +1,25 @@
+{
+  "name": "csv-viewer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "npx @tailwindcss/cli -i src/input.css -o assets/css/tailwind.css --minify",
+    "watch:css": "npx @tailwindcss/cli -i src/input.css -o assets/css/tailwind.css --watch",
+    "build:protect": "node tools/build-protected.js",
+    "start": "php -S localhost:8080"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "papaparse": "^5.7.0",
+    "tailwindcss": "^4.3.5",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.10.0"
+  }
+}

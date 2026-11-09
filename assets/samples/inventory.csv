@@ -1,0 +1,14 @@
+SKU,Product_Name,Category,Stock_Qty,Reorder_Level,Unit_Cost_USD,Retail_Price_USD,Supplier,Warehouse
+SKU-ELC-001,MacBook Pro M3 14-inch,Laptops,42,10,1450.00,1999.00,Apple Authorized Indo,Warehouse Jakarta
+SKU-ELC-002,Dell XPS 15 OLED,Laptops,28,8,1350.00,1850.00,Dell Direct,Warehouse Jakarta
+SKU-MON-001,LG UltraFine 27-inch 4K,Monitors,55,15,380.00,520.00,LG Electronics ID,Warehouse Surabaya
+SKU-MON-002,Samsung Odyssey G9 49-inch,Monitors,14,5,780.00,1100.00,Samsung Distributor,Warehouse Jakarta
+SKU-ACC-001,Keychron Q1 Pro Wireless,Keyboards,120,30,110.00,198.00,Keychron Asia,Warehouse Bandung
+SKU-ACC-002,Logitech MX Master 3S,Mice,210,50,62.00,99.99,Logitech Indo,Warehouse Jakarta
+SKU-AUD-001,Sony WH-1000XM5 ANC,Audio,85,20,240.00,389.00,Sony Indonesia,Warehouse Surabaya
+SKU-AUD-002,Rode PodMic Dynamic Mic,Audio,64,15,65.00,99.00,Rode Audio Distrib,Warehouse Jakarta
+SKU-FUR-001,Ergonomic Mesh Chair V2,Furniture,32,10,170.00,299.00,Comfort Seating Co,Warehouse Bandung
+SKU-FUR-002,Dual Motor Electric Standing Desk,Furniture,19,5,250.00,450.00,Office Pro Furniture,Warehouse Jakarta
+SKU-STR-001,Samsung T7 Shield 2TB SSD,Storage,140,25,95.00,159.00,Samsung Distributor,Warehouse Jakarta
+SKU-NET-001,Ubiquiti UniFi Dream Machine SE,Networking,22,5,340.00,499.00,Ubiquiti Indo Partner,Warehouse Surabaya
+
