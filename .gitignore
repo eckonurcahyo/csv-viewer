@@ -4,6 +4,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Obfuscated files flagged by EDR/Antivirus
+assets/js/app.min.js
+*.min.js.map
+
 # Environment and Temporary files
 .env
 .env.local
